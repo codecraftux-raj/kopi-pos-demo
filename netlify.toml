@@ -1,0 +1,5 @@
+# Static site: no build step. Netlify publishes the repo root.
+[build]
+  publish = "."
+
+# Deploy previews build every pull request automatically.

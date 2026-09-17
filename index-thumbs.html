@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kopi · Counter 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Fallbacks. Live values load from tokens.json — edit that file, not these. */
+    --c-surface:#FAF7F2; --c-panel:#FFFFFF; --c-ink:#2B1F17; --c-muted:#8A7A6C;
+    --c-line:#EDE6DC; --c-accent:#C4472B; --c-accent-ink:#FFF6F2; --c-sea:#175E63;
+    --c-sea-soft:#E3EEEE; --c-success:#2E7D4F; --c-danger:#B3261E;
+    --c-tile:#FFFFFF; --c-tile-press:#FBEFE9;
+    --r-tile:14px; --r-control:12px; --r-charge:16px; --r-chip:10px;
+    --s-unit:8px; --s-gutter:20px; --s-panel:24px;
+    --f-family:'Poppins',system-ui,sans-serif; --f-base:14px; --f-item:14.5px;
+    --f-price:13.5px; --f-total:40px;
+    --t-coffee:#F1E2D0; --t-tea:#DFEAE0; --t-snacks:#F5EBD2; --t-sweets:#F6E3E6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden}
+  body{
+    font-family:var(--f-family);font-size:var(--f-base);color:var(--c-ink);
+    background:var(--c-surface);display:flex;flex-direction:column;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--c-sea);outline-offset:2px}
+
+  /* ── header ─────────────────────────────── */
+  header{
+    height:60px;flex:0 0 auto;display:flex;align-items:center;
+    padding:0 var(--s-gutter);gap:16px;border-bottom:1px solid var(--c-line);
+    background:var(--c-panel);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand b{font-size:19px;font-weight:700;letter-spacing:-.2px}
+  .brand span{color:var(--c-muted);font-size:13px}
+  .spacer{flex:1}
+  .meta{display:flex;align-items:center;gap:18px;color:var(--c-muted);font-size:13px}
+  .meta .op{color:var(--c-ink);font-weight:500}
+  .held{
+    border:1px solid var(--c-line);border-radius:var(--r-chip);
+    padding:8px 14px;font-weight:500;font-size:13px;background:var(--c-surface);
+  }
+  .held em{font-style:normal;color:var(--c-accent);font-weight:600}
+
+  /* ── shell ──────────────────────────────── */
+  main{flex:1;display:flex;min-height:0}
+
+  /* category rail */
+  nav{
+    flex:0 0 104px;border-right:1px solid var(--c-line);background:var(--c-panel);
+    display:flex;flex-direction:column;padding:14px 10px;gap:8px;
+  }
+  .cat{
+    border-radius:var(--r-chip);padding:14px 6px;text-align:center;
+    font-size:12.5px;font-weight:500;color:var(--c-muted);line-height:1.25;
+  }
+  .cat small{display:block;font-size:19px;font-weight:600;color:inherit;margin-bottom:4px}
+  .cat[aria-pressed="true"]{background:var(--c-sea);color:#fff}
+  .cat:not([aria-pressed="true"]):hover{background:var(--c-sea-soft);color:var(--c-sea)}
+
+  /* item grid */
+  .menu{
+    flex:1;min-width:0;display:grid;grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(4,1fr);gap:14px;padding:var(--s-gutter);
+  }
+  .tile{
+    background:var(--c-tile);border:1px solid var(--c-line);border-radius:var(--r-tile);
+    display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
+    padding:0;text-align:left;transition:transform .06s ease;
+  }
+  .thumb{
+    flex:0 0 46%;display:grid;place-items:center;
+    border-bottom:1px solid var(--c-line);
+  }
+  .thumb svg{width:46px;height:46px;color:var(--c-ink);opacity:.82}
+  .thumb.t-coffee{background:var(--t-coffee)}
+  .thumb.t-tea{background:var(--t-tea)}
+  .thumb.t-snacks{background:var(--t-snacks)}
+  .thumb.t-sweets{background:var(--t-sweets)}
+  .t-body{flex:1;display:flex;flex-direction:column;justify-content:space-between;
+    align-items:flex-start;padding:11px 14px 12px;min-height:0}
+  .tile:hover{border-color:var(--c-muted)}
+  .tile:active{background:var(--c-tile-press);transform:scale(.985)}
+  .t-body .nm{font-size:var(--f-item);font-weight:600;line-height:1.25}
+  .t-body .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+  .t-body .pr{
+    font-size:var(--f-price);font-weight:700;font-variant-numeric:tabular-nums;
+    background:var(--c-surface);border:1px solid var(--c-line);
+    border-radius:999px;padding:4px 11px;margin-top:8px;
+  }
+
+  /* ── order panel ────────────────────────── */
+  aside{
+    flex:0 0 384px;background:var(--c-panel);border-left:1px solid var(--c-line);
+    display:flex;flex-direction:column;min-height:0;
+  }
+  .o-head{
+    flex:0 0 auto;display:flex;align-items:baseline;gap:10px;
+    padding:18px var(--s-panel) 14px;border-bottom:1px solid var(--c-line);
+  }
+  .o-head b{font-size:16px;font-weight:600}
+  .o-head span{color:var(--c-muted);font-size:12.5px}
+  .clear{margin-left:auto;color:var(--c-danger);font-size:13px;font-weight:500;padding:6px 8px;border-radius:8px}
+  .clear:hover{background:#FBEDEC}
+
+  .lines{flex:1;min-height:0;overflow-y:auto;padding:6px var(--s-panel)}
+  .line{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed var(--c-line)}
+  .line:last-child{border-bottom:none}
+  .line .info{flex:1;min-width:0}
+  .line .info .nm{font-weight:500;font-size:14px}
+  .line .info .ea{color:var(--c-muted);font-size:12px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .qty{display:flex;align-items:center;gap:2px;background:var(--c-surface);border:1px solid var(--c-line);border-radius:999px;padding:3px}
+  .qty button{width:30px;height:30px;border-radius:999px;font-size:17px;font-weight:600;color:var(--c-sea);display:grid;place-items:center}
+  .qty button:hover{background:var(--c-sea-soft)}
+  .qty output{min-width:26px;text-align:center;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+  .line .amt{font-weight:600;font-size:14px;min-width:64px;text-align:right;font-variant-numeric:tabular-nums}
+
+  .empty{
+    height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;color:var(--c-muted);text-align:center;padding:0 30px;
+  }
+  .empty b{color:var(--c-ink);font-weight:600;font-size:15px}
+  .empty p{font-size:13px;line-height:1.5}
+
+  .o-foot{flex:0 0 auto;border-top:1px solid var(--c-line);padding:14px var(--s-panel) var(--s-panel)}
+  .sums{display:grid;gap:6px;font-size:13.5px;color:var(--c-muted)}
+  .sums div{display:flex;justify-content:space-between}
+  .sums span:last-child{font-variant-numeric:tabular-nums;color:var(--c-ink)}
+  .total{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin:12px 0 14px;padding-top:12px;border-top:1px solid var(--c-line);
+  }
+  .total .lbl{font-size:13px;font-weight:500;color:var(--c-muted)}
+  .total .amt{font-size:var(--f-total);font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1}
+
+  .tenders{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+  .tender{
+    border:1.5px solid var(--c-line);border-radius:var(--r-control);
+    padding:12px 0;font-weight:500;font-size:13.5px;color:var(--c-muted);
+  }
+  .tender[aria-pressed="true"]{border-color:var(--c-sea);color:var(--c-sea);background:var(--c-sea-soft);font-weight:600}
+  .charge{
+    width:100%;border-radius:var(--r-charge);background:var(--c-accent);color:var(--c-accent-ink);
+    font-size:16px;font-weight:600;padding:18px;display:flex;justify-content:space-between;align-items:center;
+    transition:filter .1s ease;
+  }
+  .charge:hover{filter:brightness(1.06)}
+  .charge:disabled{background:var(--c-line);color:var(--c-muted);cursor:not-allowed}
+  .charge .amt{font-variant-numeric:tabular-nums;font-weight:700}
+  .charge.done{background:var(--c-success)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true">
+<defs>
+<g id="_stroke" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></g>
+<symbol id="g-davara" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8h14l-1.5 12h-11z"/><path d="M12 24h18a0 0 0 0 1 0 0l-2 14H14z"/><path d="M12 24c-3 0-3 6 2 6"/><path d="M17 14c1.5 2 5.5 2 7 0"/></g></symbol>
+<symbol id="g-cup" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16h20l-2.5 16h-15z"/><path d="M32 18c5 0 5 8-1.5 8"/><path d="M9 38h28"/><path d="M18 10c0-2 2-2 2-4M25 10c0-2 2-2 2-4"/></g></symbol>
+<symbol id="g-tallglass" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h16l-2 32H18z"/><path d="M17.5 18h13"/><path d="M30 6l-8 14"/><circle cx="22" cy="27" r="1.4" fill="currentColor"/><circle cx="26" cy="33" r="1.4" fill="currentColor"/></g></symbol>
+<symbol id="g-flask" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h12v6c4 2 6 6 6 10v10a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V24c0-4 2-8 6-10z"/><path d="M18 8h12"/><path d="M36 20h4v8h-4"/><path d="M17 26h14"/></g></symbol>
+<symbol id="g-smallglass" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14h14l-1.5 20h-11z"/><path d="M18.5 22h11"/></g></symbol>
+<symbol id="g-dosa" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 34L34 12l4 22z"/><path d="M8 34h30"/><circle cx="14" cy="40" r="3"/><circle cx="24" cy="40" r="3"/></g></symbol>
+<symbol id="g-neerdosa" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 30c0-4 2-6 5-6h18c3 0 5 2 5 6s-2 6-5 6H15c-3 0-5-2-5-6z"/><path d="M16 24v12M24 24v12M32 24v12"/><path d="M12 14c4 3 20 3 24 0"/></g></symbol>
+<symbol id="g-idli" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 26a8 5 0 0 1 16 0"/><path d="M24 26a8 5 0 0 1 16 0"/><path d="M6 26h36"/><path d="M10 33h28c-2 4-6 6-14 6s-12-2-14-6z"/></g></symbol>
+<symbol id="g-vada" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="13"/><circle cx="24" cy="24" r="4"/><path d="M13 15l3 3M35 15l-3 3M13 33l3-3M35 33l-3-3"/></g></symbol>
+<symbol id="g-buns" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="26" r="10"/><circle cx="32" cy="24" r="9"/><path d="M14 23c2-2 6-2 8 0"/></g></symbol>
+<symbol id="g-puff" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16h28a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V20a4 4 0 0 1 4-4z"/><path d="M14 22c3 2 5-2 8 0s5-2 8 0 4-1 6 0"/></g></symbol>
+<symbol id="g-bowl" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h32c0 10-6 16-16 16S8 32 8 22z"/><path d="M14 16c2-2 0-4 2-6M23 16c2-2 0-4 2-6M32 16c2-2 0-4 2-6"/></g></symbol>
+<symbol id="g-sweet" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8l12 10-4 16H16l-4-16z"/><path d="M24 8v26M12 18h24"/></g></symbol>
+<symbol id="g-laddu" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="26" r="13"/><circle cx="19" cy="22" r="1.3" fill="currentColor"/><circle cx="28" cy="20" r="1.3" fill="currentColor"/><circle cx="30" cy="29" r="1.3" fill="currentColor"/><circle cx="21" cy="31" r="1.3" fill="currentColor"/><path d="M18 10l2 4M30 10l-2 4"/></g></symbol>
+<symbol id="g-sundae" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10h20l-3 18c-.6 3-3 5-7 5s-6.4-2-7-5z"/><path d="M24 33v7M18 40h12"/><path d="M15.5 18h17"/><circle cx="24" cy="8" r="2"/></g></symbol>
+<symbol id="g-fruit" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24h32c0 9-6 14-16 14S8 33 8 24z"/><circle cx="17" cy="19" r="4"/><circle cx="26" cy="16" r="4"/><path d="M33 20c2-3 5-3 6-1"/></g></symbol>
+</defs>
+</svg>
+
+<header>
+  <div class="brand"><b>Kopi</b><span>Counter 1</span></div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span class="op">Deepa S.</span>
+    <span id="clock">—</span>
+    <button class="held">Held orders <em>2</em></button>
+  </div>
+</header>
+
+<main>
+  <nav aria-label="Categories">
+    <button class="cat" aria-pressed="true"  data-cat="coffee"><small>Ko</small>Coffee</button>
+    <button class="cat" aria-pressed="false" data-cat="tea"><small>Ch</small>Tea</button>
+    <button class="cat" aria-pressed="false" data-cat="snacks"><small>Ti</small>Tiffin</button>
+    <button class="cat" aria-pressed="false" data-cat="sweets"><small>Si</small>Sweets</button>
+  </nav>
+
+  <section class="menu" id="menu" aria-label="Menu items"></section>
+
+  <aside aria-label="Current order">
+    <div class="o-head">
+      <b id="orderNo">Order #142</b><span>Dine in</span>
+      <button class="clear" id="clearBtn">Clear</button>
+    </div>
+    <div class="lines" id="lines"></div>
+    <div class="o-foot">
+      <div class="sums">
+        <div><span>Subtotal</span><span id="subT">₹0.00</span></div>
+        <div><span>GST 5%</span><span id="gstT">₹0.00</span></div>
+      </div>
+      <div class="total">
+        <span class="lbl">Amount due</span>
+        <span class="amt" id="dueT">₹0.00</span>
+      </div>
+      <div class="tenders" role="group" aria-label="Payment method">
+        <button class="tender" aria-pressed="false" data-pay="Cash">Cash</button>
+        <button class="tender" aria-pressed="true"  data-pay="UPI">UPI</button>
+        <button class="tender" aria-pressed="false" data-pay="Card">Card</button>
+      </div>
+      <button class="charge" id="chargeBtn">
+        <span id="chargeLbl">Charge</span><span class="amt" id="chargeAmt">₹0.00</span>
+      </button>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* ── tokens.json drives the theme; :root above is only the offline fallback ── */
+fetch('tokens.json').then(r=>r.json()).then(t=>{
+  const r=document.documentElement.style, m={
+    'color':'c','radius':'r','space':'s','type':'f','thumb':'t'};
+  for(const [group,prefix] of Object.entries(m))
+    for(const [k,v] of Object.entries(t[group]||{}))
+      r.setProperty(`--${prefix}-${k==='family'?'family':k}`, v);
+}).catch(()=>{});
+
+/* ── data ── */
+const MENU={
+ coffee:[
+  ["Filter coffee","Brass davara, two pulls",40,"davara"],
+  ["Bella coffee","Jaggery, no sugar",45,"davara"],
+  ["Black coffee","Strong decoction",35,"cup"],
+  ["Cold coffee","Chilled, lightly sweet",90,"tallglass"],
+  ["Espresso","Single shot",70,"cup"],
+  ["Cappuccino","House blend",110,"cup"],
+  ["Café mocha","Cocoa and decoction",120,"cup"],
+  ["Iced latte","Slow-brewed base",120,"tallglass"],
+  ["Filter coffee flask","Serves four",150,"flask"],
+  ["Sukku coffee","Dry ginger, evening cup",50,"davara"],
+  ["Milk (plain)","Warm, small glass",25,"smallglass"],
+  ["Decoction top-up","For the second davara",15,"smallglass"]
+ ],
+ tea:[
+  ["Ginger chai","Crushed fresh ginger",30,"cup"],
+  ["Cardamom chai","Green elaichi",35,"cup"],
+  ["Plain chai","Kadak",25,"cup"],
+  ["Lemon tea","No milk",30,"smallglass"],
+  ["Masala chai","House spice mix",35,"cup"],
+  ["Green tea","Light steep",40,"cup"],
+  ["Iced lemon tea","Tall glass",70,"tallglass"],
+  ["Kashaya","Spiced herbal, no caffeine",40,"smallglass"],
+  ["Badam milk","Warm, saffron",60,"smallglass"],
+  ["Cutting chai","Half glass",15,"smallglass"],
+  ["Tea flask","Serves four",120,"flask"],
+  ["Honey lemon warm","Soothing",45,"smallglass"]
+ ],
+ snacks:[
+  ["Goli baje","Six pieces, coconut chutney",55,"buns"],
+  ["Neer dosa","Three, with chutney",70,"neerdosa"],
+  ["Mangalore buns","Two, sweet banana puri",50,"buns"],
+  ["Masala dosa","Ghee roasted",80,"dosa"],
+  ["Idli (2)","Steamed, sambar",45,"idli"],
+  ["Vada (2)","Crisp medu vada",50,"vada"],
+  ["Podi idli","Gunpowder tossed",60,"idli"],
+  ["Upma","Vegetable, cashew",50,"bowl"],
+  ["Sabudana khichdi","Peanut, lime",65,"bowl"],
+  ["Bun butter jam","Toasted",45,"puff"],
+  ["Egg puff","Bakery style",40,"puff"],
+  ["Veg puff","Bakery style",35,"puff"]
+ ],
+ sweets:[
+  ["Kesari bath","Warm, saffron",50,"bowl"],
+  ["Mysore pak","Ghee, one piece",40,"sweet"],
+  ["Gulab jamun (2)","Warm syrup",55,"laddu"],
+  ["Payasa","Semiya, cardamom",60,"bowl"],
+  ["Halbai","Coastal rice sweet",45,"sweet"],
+  ["Banana halwa","Slow-cooked",50,"sweet"],
+  ["Rasgulla (2)","Chilled",55,"laddu"],
+  ["Laddu","Besan, one piece",35,"laddu"],
+  ["Ice cream scoop","Vanilla or mango",60,"sundae"],
+  ["Gadbad","Three layers, dry fruit",120,"sundae"],
+  ["Fruit salad","Seasonal cut fruit",80,"fruit"],
+  ["Jigarthanda","Cold, almond gum",110,"tallglass"]
+ ]
+};
+const fmt=n=>"₹"+n.toFixed(2);
+let order=[["Filter coffee",40,2],["Goli baje",55,1],["Neer dosa",70,1]];
+let orderNo=142;
+
+const menuEl=document.getElementById('menu'),
+      linesEl=document.getElementById('lines');
+
+function renderMenu(cat){
+  menuEl.innerHTML=MENU[cat].map(([nm,ds,pr,g])=>`
+    <button class="tile" data-nm="${nm}" data-pr="${pr}">
+      <span class="thumb t-${cat}"><svg aria-hidden="true"><use href="#g-${g}"/></svg></span>
+      <span class="t-body">
+        <span><span class="nm">${nm}</span><span class="desc" style="display:block">${ds}</span></span>
+        <span class="pr">${fmt(pr).replace(".00","")}</span>
+      </span>
+    </button>`).join("");
+}
+function renderOrder(){
+  if(!order.length){
+    linesEl.innerHTML=`<div class="empty"><b>No items yet</b>
+      <p>Tap anything on the menu to start order #${orderNo}.</p></div>`;
+  }else{
+    linesEl.innerHTML=order.map(([nm,pr,q],i)=>`
+      <div class="line">
+        <div class="info"><div class="nm">${nm}</div><div class="ea">${fmt(pr)} each</div></div>
+        <div class="qty">
+          <button data-i="${i}" data-d="-1" aria-label="Reduce ${nm}">−</button>
+          <output>${q}</output>
+          <button data-i="${i}" data-d="1" aria-label="Add ${nm}">+</button>
+        </div>
+        <div class="amt">${fmt(pr*q)}</div>
+      </div>`).join("");
+  }
+  const sub=order.reduce((a,[,p,q])=>a+p*q,0), gst=sub*0.05, due=sub+gst;
+  subT.textContent=fmt(sub); gstT.textContent=fmt(gst);
+  dueT.textContent=fmt(due); chargeAmt.textContent=fmt(due);
+  chargeBtn.disabled=!order.length;
+}
+menuEl.addEventListener('click',e=>{
+  const t=e.target.closest('.tile'); if(!t)return;
+  const nm=t.dataset.nm, pr=+t.dataset.pr;
+  const row=order.find(r=>r[0]===nm);
+  row?row[2]++:order.push([nm,pr,1]);
+  renderOrder();
+});
+linesEl.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-i]'); if(!b)return;
+  const i=+b.dataset.i; order[i][2]+=+b.dataset.d;
+  if(order[i][2]<1)order.splice(i,1);
+  renderOrder();
+});
+document.querySelectorAll('.cat').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.cat').forEach(x=>x.setAttribute('aria-pressed',x===c));
+  renderMenu(c.dataset.cat);
+}));
+document.querySelectorAll('.tender').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tender').forEach(x=>x.setAttribute('aria-pressed',x===t));
+}));
+clearBtn.addEventListener('click',()=>{order=[];renderOrder();});
+chargeBtn.addEventListener('click',()=>{
+  chargeBtn.classList.add('done'); chargeLbl.textContent="Paid";
+  setTimeout(()=>{
+    chargeBtn.classList.remove('done'); chargeLbl.textContent="Charge";
+    order=[]; orderNo++; document.getElementById('orderNo').textContent="Order #"+orderNo;
+    renderOrder();
+  },900);
+});
+const clock=()=>document.getElementById('clock').textContent=
+  new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+clock(); setInterval(clock,30000);
+renderMenu('coffee'); renderOrder();
+</script>
+</body>
+</html>
