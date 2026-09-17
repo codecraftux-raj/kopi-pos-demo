@@ -1,0 +1,34 @@
+name: checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pages exist
+        run: test -f index.html && test -f index-thumbs.html
+      - name: Tokens parse as JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('tokens.json','utf8')); console.log('tokens.json is valid JSON')"
+
+  token-lint:
+    name: token-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required token groups present
+        run: |
+          node -e "
+          const t=JSON.parse(require('fs').readFileSync('tokens.json','utf8'));
+          const need=['color','radius','space','type','thumb'];
+          const missing=need.filter(k=>!t[k]);
+          if(missing.length){console.error('Missing token groups: '+missing.join(', '));process.exit(1)}
+          const cneed=['surface','panel','ink','accent','line'];
+          const cmiss=cneed.filter(k=>!t.color[k]);
+          if(cmiss.length){console.error('Missing colours: '+cmiss.join(', '));process.exit(1)}
+          console.log('token schema ok');
+          "
